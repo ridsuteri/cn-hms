@@ -52,3 +52,54 @@ exports.signin = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
+exports.getUserDetail = async (req, res) =>{
+  try {
+      console.log('incoming user request', req.user);
+      const user = await User.findOne({_id: req.user.id});
+      res.status(200).json({email: user.email});
+  } catch (error) {
+      res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getAllUsers = async (req, res) =>{
+    try {
+        const users = await User.find();
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.updateUser = async (req, res) => {
+  try {
+    // check for the token, and check it's role
+    // if it's role is admin
+    // allow deleting/updating record ...
+    // if not an admin, check if the email id in token is the same record which user is trying to alte
+      const user = await User.findOneAndUpdate({email:req.params.email}, req.body, { new: true });
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+      res.status(200).json(user);
+  } catch (error) {
+      res.status(400).json({ message: error.message });
+  }
+};
+
+exports.deleteUser =  async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const deletedRecord = await User.findByIdAndDelete(userId);
+
+    if (!deletedRecord) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
